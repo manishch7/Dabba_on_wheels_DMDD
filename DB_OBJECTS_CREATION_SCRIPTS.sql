@@ -111,25 +111,25 @@ NOCYCLE;
 /
 CREATE TABLE DELIVERY_PARTNER (
     dp_id        NUMBER NOT NULL,
-    name         VARCHAR2(20 CHAR),
-    phone_number NUMBER(10),
-    email        VARCHAR2(50 CHAR),
+    d_name         VARCHAR2(20 CHAR),
+    d_phone_number NUMBER(10),
+    d_email        VARCHAR2(50 CHAR),
     CONSTRAINT delivery_partner_pk PRIMARY KEY ( dp_id ));
 /
 -- Inserting data into the DELIVERY_PARTNER table
-INSERT INTO DELIVERY_PARTNER (dp_id, name, phone_number, email)
+INSERT INTO DELIVERY_PARTNER (dp_id, d_name, d_phone_number, d_email)
 VALUES (DP_SEQ.NEXTVAL, 'Express Delivery', 1234567890, 'express@example.com');
 
-INSERT INTO DELIVERY_PARTNER (dp_id, name, phone_number, email)
+INSERT INTO DELIVERY_PARTNER (dp_id, d_name, d_phone_number, d_email)
 VALUES (DP_SEQ.NEXTVAL, 'Swift Couriers', 9876543210, 'swift_couriers@example.com');
 
-INSERT INTO DELIVERY_PARTNER (dp_id, name, phone_number, email)
+INSERT INTO DELIVERY_PARTNER (dp_id, d_name, d_phone_number, d_email)
 VALUES (DP_SEQ.NEXTVAL, 'Quick Ship', 5551234567, 'quick_ship@example.com');
 
-INSERT INTO DELIVERY_PARTNER (dp_id, name, phone_number, email)
+INSERT INTO DELIVERY_PARTNER (dp_id, d_name, d_phone_number, d_email)
 VALUES (DP_SEQ.NEXTVAL, 'Speedy Delivery', 7890123456, 'speedy@example.com');
 
-INSERT INTO DELIVERY_PARTNER (dp_id, name, phone_number, email)
+INSERT INTO DELIVERY_PARTNER (dp_id, d_name, d_phone_number, d_email)
 VALUES (DP_SEQ.NEXTVAL, 'Rapid Express', 6543210987, 'rapid_express@example.com');
 /
 CREATE SEQUENCE MEAL_SEQ
@@ -167,42 +167,42 @@ CREATE TABLE CUSTOMER (
     c_name       VARCHAR2(20 CHAR),
     dob          DATE,
     gender       VARCHAR2(10 CHAR),
-    email        VARCHAR2(50 CHAR),
-    phone_number NUMBER(10),
+    c_email        VARCHAR2(50 CHAR),
+    c_phone_number NUMBER(10),
     CONSTRAINT customer_pk PRIMARY KEY (c_id),
     CONSTRAINT customer_location_fk FOREIGN KEY ( loc_id ) REFERENCES location ( loc_id ));
 /
 -- Inserting data into the CUSTOMER table
 
 -- SELECT * FROM CUSTOMER;
-INSERT INTO CUSTOMER (c_id, loc_id, c_name, dob, gender, email, phone_number)
+INSERT INTO CUSTOMER (c_id, loc_id, c_name, dob, gender, c_email, c_phone_number)
 VALUES (CUSTOMER_SEQ.NEXTVAL, 111001, 'John Doe', TO_DATE('1990-05-15', 'YYYY-MM-DD'), 'Male', 'john.doe@example.com', 1234567890);
 
-INSERT INTO CUSTOMER (c_id, loc_id, c_name, dob, gender, email, phone_number)
+INSERT INTO CUSTOMER (c_id, loc_id, c_name, dob, gender, c_email, c_phone_number)
 VALUES (CUSTOMER_SEQ.NEXTVAL, 111002, 'Jane Smith', TO_DATE('1985-08-22', 'YYYY-MM-DD'), 'Female', 'jane.smith@example.com', 9876543210);
 
-INSERT INTO CUSTOMER (c_id, loc_id, c_name, dob, gender, email, phone_number)
+INSERT INTO CUSTOMER (c_id, loc_id, c_name, dob, gender, c_email, c_phone_number)
 VALUES (CUSTOMER_SEQ.NEXTVAL, 111003, 'Bob Johnson', TO_DATE('1978-12-10', 'YYYY-MM-DD'), 'Male', 'bob.johnson@example.com', 5551234567);
 
-INSERT INTO CUSTOMER (c_id, loc_id, c_name, dob, gender, email, phone_number)
+INSERT INTO CUSTOMER (c_id, loc_id, c_name, dob, gender, c_email, c_phone_number)
 VALUES (CUSTOMER_SEQ.NEXTVAL, 111004, 'Alice Williams', TO_DATE('1995-03-28', 'YYYY-MM-DD'), 'Female', 'alice.williams@example.com', 7890123456);
 
-INSERT INTO CUSTOMER (c_id, loc_id, c_name, dob, gender, email, phone_number)
+INSERT INTO CUSTOMER (c_id, loc_id, c_name, dob, gender, c_email, c_phone_number)
 VALUES (CUSTOMER_SEQ.NEXTVAL, 111005, 'Chris Davis', TO_DATE('1980-11-03', 'YYYY-MM-DD'), 'Non-Binary', 'chris.davis@example.com', 4567890123);
 
-INSERT INTO CUSTOMER (c_id, loc_id, c_name, dob, gender, email, phone_number)
+INSERT INTO CUSTOMER (c_id, loc_id, c_name, dob, gender, c_email, c_phone_number)
 VALUES (CUSTOMER_SEQ.NEXTVAL, 111001, 'Emma White', TO_DATE('1992-09-18', 'YYYY-MM-DD'), 'Female', 'emma.white@example.com', 9876543210);
 
-INSERT INTO CUSTOMER (c_id, loc_id, c_name, dob, gender, email, phone_number)
+INSERT INTO CUSTOMER (c_id, loc_id, c_name, dob, gender, c_email, c_phone_number)
 VALUES (CUSTOMER_SEQ.NEXTVAL, 111003, 'Mike Black', TO_DATE('1987-07-12', 'YYYY-MM-DD'), 'Male', 'mike.black@example.com', 1234567890);
 
-INSERT INTO CUSTOMER (c_id, loc_id, c_name, dob, gender, email, phone_number)
+INSERT INTO CUSTOMER (c_id, loc_id, c_name, dob, gender, c_email, c_phone_number)
 VALUES (CUSTOMER_SEQ.NEXTVAL, 111002, 'Sara Green', TO_DATE('1983-04-05', 'YYYY-MM-DD'), 'Female', 'sara.green@example.com', 5551234567);
 
-INSERT INTO CUSTOMER (c_id, loc_id, c_name, dob, gender, email, phone_number)
+INSERT INTO CUSTOMER (c_id, loc_id, c_name, dob, gender, c_email, c_phone_number)
 VALUES (CUSTOMER_SEQ.NEXTVAL, 111004, 'Alex Turner', TO_DATE('1998-01-25', 'YYYY-MM-DD'), 'Male', 'alex.turner@example.com', 7890123456);
 
-INSERT INTO CUSTOMER (c_id, loc_id, c_name, dob, gender, email, phone_number)
+INSERT INTO CUSTOMER (c_id, loc_id, c_name, dob, gender, c_email, c_phone_number)
 VALUES (CUSTOMER_SEQ.NEXTVAL, 111005, 'Taylor Martinez', TO_DATE('1991-06-14', 'YYYY-MM-DD'), 'Non-Binary', 'taylor.martinez@example.com', 4567890123);
 
 /
@@ -213,7 +213,7 @@ NOCYCLE;
 /
 CREATE TABLE SUBSCRIPTION (
     sub_id           NUMBER NOT NULL,
-    sub_date         DATE,
+    start_date         DATE,
     end_date         DATE,
     sub_type_id      NUMBER NOT NULL,
     c_id             NUMBER NOT NULL,
@@ -225,19 +225,19 @@ CONSTRAINT subscription_subscription_type_fk FOREIGN KEY ( sub_type_id ) REFEREN
 
 --DROP SEQUENCE SUB_SEQ;
 -- Inserting data into the SUBSCRIPTION table
-INSERT INTO SUBSCRIPTION (sub_id, sub_date, end_date, sub_type_id, c_id, no_of_meals_left)
+INSERT INTO SUBSCRIPTION (sub_id, start_date, end_date, sub_type_id, c_id, no_of_meals_left)
 VALUES (SUB_SEQ.NEXTVAL, TO_DATE('2023-01-01', 'YYYY-MM-DD'), TO_DATE('2023-01-31', 'YYYY-MM-DD'), 222001, 555001, 10);
 
-INSERT INTO SUBSCRIPTION (sub_id, sub_date, end_date, sub_type_id, c_id, no_of_meals_left)
+INSERT INTO SUBSCRIPTION (sub_id, start_date, end_date, sub_type_id, c_id, no_of_meals_left)
 VALUES (SUB_SEQ.NEXTVAL, TO_DATE('2023-02-01', 'YYYY-MM-DD'), TO_DATE('2023-02-28', 'YYYY-MM-DD'), 222002, 555002, 45);
 
-INSERT INTO SUBSCRIPTION (sub_id, sub_date, end_date, sub_type_id, c_id, no_of_meals_left)
+INSERT INTO SUBSCRIPTION (sub_id, start_date, end_date, sub_type_id, c_id, no_of_meals_left)
 VALUES (SUB_SEQ.NEXTVAL, TO_DATE('2023-03-01', 'YYYY-MM-DD'), TO_DATE('2023-03-31', 'YYYY-MM-DD'), 222001, 555003,10);
 
-INSERT INTO SUBSCRIPTION (sub_id, sub_date, end_date, sub_type_id, c_id, no_of_meals_left)
+INSERT INTO SUBSCRIPTION (sub_id, start_date, end_date, sub_type_id, c_id, no_of_meals_left)
 VALUES (SUB_SEQ.NEXTVAL, TO_DATE('2023-04-01', 'YYYY-MM-DD'), TO_DATE('2023-04-30', 'YYYY-MM-DD'), 222002, 555004, 45);
 
-INSERT INTO SUBSCRIPTION (sub_id, sub_date, end_date, sub_type_id, c_id, no_of_meals_left)
+INSERT INTO SUBSCRIPTION (sub_id, start_date, end_date, sub_type_id, c_id, no_of_meals_left)
 VALUES (SUB_SEQ.NEXTVAL, TO_DATE('2023-05-01', 'YYYY-MM-DD'), TO_DATE('2023-05-31', 'YYYY-MM-DD'), 222002, 555005, 45);
 
 /
