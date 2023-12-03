@@ -3,6 +3,7 @@
 -- input: name, dob, gender, email, phone, street_address, city, state, zipcode
 -- output: prints customer id on successful customer creation
 -- exception: throws exception various cases like email or phone is null or not valid, if the colum level constraints are iolated, etc..
+
 CREATE OR REPLACE PROCEDURE CUSTOMER_REGISTRATION_PROCEDURE (
     p_name            IN VARCHAR2,
     p_dob             IN DATE,
@@ -35,6 +36,7 @@ IF p_phone_number is null or length(p_phone_number) =0 or length(p_phone_number)
         RAISE EXC_PHONE_NUMBER;
     END IF;
      -- Check if the provided gender greater than 10 characters
+
     IF length(p_gender) > 10 THEN
         RAISE EXC_GENDER;
     END IF;
@@ -73,7 +75,7 @@ IF length(p_state) > 20 THEN
        if v_phone_count>0 THEN
             RAISE v_phone_exists;
         end if;
-        
+
     -- Check if the location already exists
     SELECT loc_id INTO v_loc_id FROM LOCATION WHERE street_address = p_street_address
       AND city = p_city AND state = p_state AND zipcode = p_zipcode;
@@ -144,6 +146,7 @@ END ViewAllSubscriptionTypes;
 -- DESCRIPTION AND EXCEPTIONS: checks if customer exisits in system or not, creates subscription only if there is an active subscription
 -- and meal count is greater than 0 else need to use the current subscription for meal booking, checks if subscription type amount
 --equal to payment amount only then transaction carries forward else need to retry
+
 CREATE OR REPLACE PROCEDURE PurchaseSubscription(
     p_customer_id IN NUMBER,
     p_subscription_type IN VARCHAR2,
@@ -176,13 +179,15 @@ BEGIN
         SELECT meal_count INTO v_subscription_meal_count
         FROM subscription_type
         WHERE sub_type_id = v_subscription_type_id;
+
+        -- Check if the payment amount matches the subscription price
         
         select count(*) into v_customer_exists_count from customer where c_id = p_customer_id;
         
         if v_customer_exists_count = 0 then
         raise EXC_CUS_NOT_EXISTS;
         end if;
-    
+
         SELECT count(s.sub_id) into v_sub_exists_count FROM customer c JOIN subscription s ON c.c_id = s.c_id 
         where s.end_date >= sysdate and s.c_id =p_customer_id and s.no_of_meals_left>0;
         
@@ -190,9 +195,7 @@ BEGIN
         raise EXC_SUB_EXISTS;
         end if;
       -- Check if the payment amount matches the subscription price
-        
         IF p_payment_amount = v_subscription_price THEN
-        
             -- Insert subscription record
             INSERT INTO subscription(sub_id, start_date, end_date, sub_type_id, c_id, no_of_meals_left)
             VALUES (sub_seq.NEXTVAL, SYSDATE, SYSDATE + 7, v_subscription_type_id, p_customer_id, v_subscription_meal_count);
@@ -231,6 +234,7 @@ END PurchaseSubscription;
 -- input: None
 -- output: displays all the meal types available in the system.
 -- exception: None
+
 CREATE OR REPLACE PROCEDURE ViewAllMealTypes IS
 BEGIN
     FOR meal_type_rec IN (
@@ -247,6 +251,7 @@ END ViewAllMealTypes;
 -- INPUT: Customer_id, meal type, time slot, delivery date
 -- OUTPUT: creates a booking record in the system for speified time slot and date for the customer
 -- DESCRIPTION AND EXCEPTIONS : checks if active subscription or not, delivery date is valid or not and checks all the column level constraints
+
 CREATE OR REPLACE PROCEDURE book_meal (
     p_customer_id    IN NUMBER,
     p_meal_type      IN VARCHAR2,
@@ -470,4 +475,3 @@ BEGIN
         DBMS_OUTPUT.PUT_LINE('Error: An unexpected error occurred.');
 END update_customer_details;
 /
-
