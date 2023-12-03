@@ -69,7 +69,7 @@ END;
 -- procedure 6 execution
 SET SERVEROUTPUT ON;
 DECLARE
-  v_customer_id NUMBER := 555003; -- Provide the customer ID here
+  v_customer_id NUMBER := 555001; -- Provide the customer ID here
 BEGIN
   generate_invoice(v_customer_id);
 END;
@@ -79,9 +79,16 @@ END;
 
 SET SERVEROUTPUT ON;
 DECLARE
-  v_customer_id NUMBER := 555001; -- Provide the customer ID here
+  v_customer_id NUMBER := null; -- Provide the customer ID here
 BEGIN
   get_delivery_details(v_customer_id);
 END;
 /
+
+-- procedure 8 execution
+-- Update only the customer's email
+EXEC update_customer_details(p_customer_id => 555001, p_email => 'abc@email.com');
+
+-- Update both name and phone number
+EXEC update_customer_details(p_customer_id => 555012, p_name => 'Updated Name', p_phone_number => 9876159621);
 
