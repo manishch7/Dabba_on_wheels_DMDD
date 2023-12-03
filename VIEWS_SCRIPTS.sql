@@ -13,10 +13,12 @@ LEFT JOIN PAYMENT P ON S.SUB_ID = P.SUB_ID GROUP BY C.C_ID, C.C_NAME,P.AMOUNT OR
 -- 		This view takes input from location table, booking table, meal table, delivery_partner and customer table 
 -- 	    This view generates delivery status of order, delivery date and delivery driver details 
 
+select * from DELIVERY_DETAILS_view;
+
 create or replace view DELIVERY_DETAILS_view as
-SELECT c.c_name as customer_name,  c.c_phone_number as customer_contact ,b.book_id,b.time_slot, b.date_of_delivery, m.type as meal_type,
+SELECT C.C_ID AS CUSTOMER_ID,c.c_name as customer_name,  c.c_phone_number as customer_contact ,b.book_id,b.time_slot, b.date_of_delivery, m.type as meal_type,
 b.is_delivered as delivery_status, dp.d_name as delivery_person, dp.d_phone_number as delivery_person_contact,
-( l.unit ||', ' || l.street_address||', ' || l.city ||', ' || l.state ||', ' || l.zipcode) as address
+( l.street_address||', ' || l.city ||', ' || l.state ||', ' || l.zipcode) as address
 from booking b
 left join delivery_partner dp
 on b.dp_id = dp.dp_id
@@ -44,9 +46,12 @@ FROM SubscriptionMealCounts
 )
 WHERE RANKING = 1;
 
+
 -- 4. Delivery schedule View
 -- 		This view takes input from location table, booking table, meal table, delivery_partner and customer table 
 --      This view will provide popular meal among the subscription types for manager
+
+select * from DELIVERY_SCHEDULE_VIEW;
 
 create or replace view DELIVERY_SCHEDULE_VIEW as
 SELECT
@@ -67,6 +72,7 @@ JOIN
     LOCATION L ON C.LOC_ID = L.LOC_ID
 ORDER BY
     DP.D_NAME, B.DATE_OF_DELIVERY, B.TIME_SLOT, B.BOOK_ID;
+
 
 -- 5. Customer popular choice View
 -- 		This view takes input from location table, booking table, meal table, delivery_partner and customer table 

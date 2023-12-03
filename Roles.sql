@@ -1,6 +1,6 @@
-drop user C00001 cascade;
-
-drop role customer;
+--drop user C00001 cascade;
+--
+--drop role customer;
 
 --CREATES ROLES 
 CREATE ROLE CUSTOMER;
