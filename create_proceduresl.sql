@@ -1,3 +1,8 @@
+
+-- 1. CUSTOMER_REGISTRATION_PROCEDURE
+-- input: name, dob, gender, email, phone, street_address, city, state, zipcode
+-- output: prints customer id on successful customer creation
+-- exception: throws exception various cases like email or phone is null or not valid, if the colum level constraints are iolated, etc..
 CREATE OR REPLACE PROCEDURE CUSTOMER_REGISTRATION_PROCEDURE (
     p_name            IN VARCHAR2,
     p_dob             IN DATE,
@@ -30,7 +35,6 @@ IF p_phone_number is null or length(p_phone_number) =0 or length(p_phone_number)
         RAISE EXC_PHONE_NUMBER;
     END IF;
      -- Check if the provided gender greater than 10 characters
-
     IF length(p_gender) > 10 THEN
         RAISE EXC_GENDER;
     END IF;
@@ -69,7 +73,6 @@ IF length(p_state) > 20 THEN
        if v_phone_count>0 THEN
             RAISE v_phone_exists;
         end if;
-       
         
     -- Check if the location already exists
     SELECT loc_id INTO v_loc_id FROM LOCATION WHERE street_address = p_street_address
@@ -113,12 +116,15 @@ EXCEPTION
         DBMS_OUTPUT.PUT_LINE('state should not be more than 50 characters');
     WHEN EXC_ZIP THEN
         DBMS_OUTPUT.PUT_LINE('zipcode should be equal 5 digit number');
-
-    --WHEN OTHERS THEN
-        --DBMS_OUTPUT.PUT_LINE('Error: An unexpected error occurred.');
+   WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error: An unexpected error occurred.');
 END CUSTOMER_REGISTRATION_PROCEDURE;
 /
 
+-- 2. ViewAllSubscriptionTypes
+-- input: None
+-- output: displays all the subscription types available in the system.
+-- exception: None
 CREATE OR REPLACE PROCEDURE ViewAllSubscriptionTypes IS
 BEGIN
     FOR sub_type_rec IN (
@@ -132,7 +138,12 @@ BEGIN
 END ViewAllSubscriptionTypes;
 /
 
-
+-- 3. PurchaseSubscription
+-- INPUT : customer id, subscription type, payment amount
+-- OUTPUT: payment is recorded and enrolled for subscription
+-- DESCRIPTION AND EXCEPTIONS: checks if customer exisits in system or not, creates subscription only if there is an active subscription
+-- and meal count is greater than 0 else need to use the current subscription for meal booking, checks if subscription type amount
+--equal to payment amount only then transaction carries forward else need to retry
 CREATE OR REPLACE PROCEDURE PurchaseSubscription(
     p_customer_id IN NUMBER,
     p_subscription_type IN VARCHAR2,
@@ -165,20 +176,20 @@ BEGIN
         SELECT meal_count INTO v_subscription_meal_count
         FROM subscription_type
         WHERE sub_type_id = v_subscription_type_id;
-        -- Check if the payment amount matches the subscription price
         
         select count(*) into v_customer_exists_count from customer where c_id = p_customer_id;
         
         if v_customer_exists_count = 0 then
         raise EXC_CUS_NOT_EXISTS;
         end if;
-        
+    
         SELECT count(s.sub_id) into v_sub_exists_count FROM customer c JOIN subscription s ON c.c_id = s.c_id 
         where s.end_date >= sysdate and s.c_id =p_customer_id and s.no_of_meals_left>0;
         
         if v_sub_exists_count>0 then
         raise EXC_SUB_EXISTS;
         end if;
+      -- Check if the payment amount matches the subscription price
         
         IF p_payment_amount = v_subscription_price THEN
         
@@ -216,6 +227,10 @@ EXCEPTION
 END PurchaseSubscription;
 /
 
+-- 4. ViewAllMealTypes
+-- input: None
+-- output: displays all the meal types available in the system.
+-- exception: None
 CREATE OR REPLACE PROCEDURE ViewAllMealTypes IS
 BEGIN
     FOR meal_type_rec IN (
@@ -228,6 +243,10 @@ BEGIN
 END ViewAllMealTypes;
 /
 
+-- 5. book_meal
+-- INPUT: Customer_id, meal type, time slot, delivery date
+-- OUTPUT: creates a booking record in the system for speified time slot and date for the customer
+-- DESCRIPTION AND EXCEPTIONS : checks if active subscription or not, delivery date is valid or not and checks all the column level constraints
 CREATE OR REPLACE PROCEDURE book_meal (
     p_customer_id    IN NUMBER,
     p_meal_type      IN VARCHAR2,
@@ -301,10 +320,22 @@ EXCEPTION
 END book_meal;
 /
 
+-- 6. generate_invoice
+-- INPUT : Customer_id
+-- OUTPUT: prints all the payment details made till date  
+-- DESCRIPTION AND EXCEPTION: checks if customer exists in system or not 
+-- if exists displays all the payments in chronological order else displays error message
+
 CREATE OR REPLACE PROCEDURE generate_invoice (
     p_customer_id IN NUMBER
 ) IS
+ count_number NUMBER;
 BEGIN
+    select count(c_id) into count_number from customer where c_id = p_customer_id  ;
+    if count_number = 0 then
+    DBMS_OUTPUT.PUT_LINE('Customer doesnt exist! Please enter a valid customer id');
+    return;
+    end if;
     FOR invoice_rec IN (
         SELECT
             p.pay_id,
@@ -328,11 +359,22 @@ BEGIN
 END generate_invoice;
 /
 
+-- 7. get_delivery_details
+-- INPUT: customer_id
+-- OUTPUT: prints delivery details
+-- DESCRIPTION AND EXCEPTION: this procedure checks if customer exists in system or not if exists then it is used
+-- to get delivery details of all the bookings made by the customer.
 
 CREATE OR REPLACE PROCEDURE get_delivery_details (
     p_customer_id IN NUMBER
 ) IS
+count_number NUMBER;
 BEGIN
+    select count(c_id) into count_number from customer where c_id = p_customer_id  ;
+    if count_number = 0 then
+    DBMS_OUTPUT.PUT_LINE('Customer doesnt exist! Please enter a valid customer id');
+    return;
+    end if;
     FOR delivery_rec IN (
         SELECT *
         FROM DELIVERY_DETAILS_view
@@ -340,11 +382,92 @@ BEGIN
     ) LOOP
         DBMS_OUTPUT.PUT_LINE('---------------------------------------------------');
         DBMS_OUTPUT.PUT_LINE('Booking ID: ' || delivery_rec.BOOK_ID ||' | ' ||'Customer ID: ' || delivery_rec.CUSTOMER_ID || ' | ' ||
-'Delivery Date: ' || TO_CHAR(delivery_rec.DATE_OF_DELIVERY, 'YYYY-MM-DD') || ' | ' ||
-'Time Slot: ' || delivery_rec.TIME_SLOT || ' | ' || 'Delivery Partner: ' || delivery_rec.delivery_person ||
-' | ' || 'Is Delivered: ' || delivery_rec.delivery_status);
+        'Delivery Date: ' || TO_CHAR(delivery_rec.DATE_OF_DELIVERY, 'YYYY-MM-DD') || ' | ' ||
+        'Time Slot: ' || delivery_rec.TIME_SLOT || ' | ' || 'Delivery Partner: ' || delivery_rec.delivery_person ||
+        ' | ' || 'Is Delivered: ' || delivery_rec.delivery_status);
     END LOOP;
     DBMS_OUTPUT.PUT_LINE('---------------------------------------------------');
 END get_delivery_details;
+/
+
+-- 8. update_customer_details
+-- INPUT: customer_id or/and name or/and dob or/and gender or/and email or/and hone number. 
+-- OUTPUT: updates the correspondeing customer record with new details.
+-- DESCRIPTION AND EXCEPTION: this procedure checks if customer exists in system or not if exists then it is used
+-- to get delivery details of all the bookings made by the customer.
+CREATE OR REPLACE PROCEDURE update_customer_details (
+    p_customer_id   IN NUMBER,
+    p_name          IN VARCHAR2 DEFAULT NULL,
+    p_dob           IN DATE DEFAULT NULL,
+    p_gender        IN VARCHAR2 DEFAULT NULL,
+    p_email         IN VARCHAR2 DEFAULT NULL,
+    p_phone_number  IN NUMBER DEFAULT NULL
+) IS
+    v_email_exists EXCEPTION;
+    v_email_count number;
+    v_phone_exists EXCEPTION;
+    v_phone_count number;
+    EXC_PHONE_NUMBER EXCEPTION;
+    EXC_GENDER EXCEPTION;
+    EXC_EMAIL EXCEPTION;
+BEGIN
+
+     -- Check if the provided phone number  not equal to 10 digits
+    IF length(p_phone_number) =0 or length(p_phone_number) != 10 THEN
+        RAISE EXC_PHONE_NUMBER;
+    END IF;
+    
+     -- Check if the provided gender greater than 10 characters
+    IF length(p_gender) > 10 THEN
+        RAISE EXC_GENDER;
+    END IF;
+     -- Check if the provided email greater than 50 characters
+    IF length(p_email) =0 or length(p_email) > 50 THEN
+        RAISE EXC_EMAIL;
+    END IF;
+    
+    -- Check if the provided email already exists
+        SELECT count(*) INTO v_email_count FROM CUSTOMER WHERE c_email = p_email and c_id != p_customer_id;
+        -- If the email exists, raise an exception
+        if v_email_count>0 THEN
+            RAISE v_email_exists;
+        end if;
+
+    -- Check if the provided phone number already exists
+        SELECT count(*) INTO v_phone_count FROM CUSTOMER WHERE c_phone_number = p_phone_number and c_id != p_customer_id;
+        -- If the phone number exists, raise an exception
+       if v_phone_count>0 THEN
+            RAISE v_phone_exists;
+        end if;
+       
+    UPDATE CUSTOMER
+    SET
+        c_name = NVL(p_name, c_name),
+        dob = NVL(p_dob, dob),
+        gender = NVL(p_gender, gender),
+        c_email = NVL(p_email, c_email),
+        c_phone_number = NVL(p_phone_number, c_phone_number)
+    WHERE c_id = p_customer_id;
+
+    COMMIT;
+
+    DBMS_OUTPUT.PUT_LINE('Customer details updated successfully.');
+    
+    EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('Customer with ID ' || p_customer_id || ' not found.');
+    WHEN v_email_exists THEN
+        DBMS_OUTPUT.PUT_LINE('Error: Email already exists.');
+    WHEN v_phone_exists THEN
+        DBMS_OUTPUT.PUT_LINE('Error: Phone number already exists.');
+    WHEN EXC_PHONE_NUMBER THEN
+        DBMS_OUTPUT.PUT_LINE('Mobile phone number cant be empty and should be 10 digit number');
+    WHEN EXC_EMAIL THEN
+        DBMS_OUTPUT.PUT_LINE('email cant be empty and should not be more than 50 characters');
+    WHEN EXC_GENDER THEN
+        DBMS_OUTPUT.PUT_LINE('gender should not be more than 10 characters');
+   WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error: An unexpected error occurred.');
+END update_customer_details;
 /
 
