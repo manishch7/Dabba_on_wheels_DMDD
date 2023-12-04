@@ -149,7 +149,7 @@ END;
 
 -- procedure 16 execution
 BEGIN
-    update_delivery_status(777001, 'y');
+    update_delivery_status(333001, 777005, 'y');
 END;
 /
 

@@ -825,15 +825,19 @@ END view_pending_deliveries;
 -- DESCRIPTION AND EXCEPTION: this procedure checks if booking id and is_delivered is valid or not 
 -- and all column level constraints.
 CREATE OR REPLACE PROCEDURE update_delivery_status (
+    p_dp_id      IN NUMBER,
     p_booking_id IN NUMBER,
     p_is_delivered IN VARCHAR2
 ) IS
 BEGIN
-    IF p_booking_id is null or length(p_booking_id) =0 THEN
+    IF p_booking_id is null or length(p_booking_id) = 0 THEN
        DBMS_OUTPUT.PUT_LINE('booking_id is required');
        RETURN;
     END IF;
-    
+    IF p_dp_id is null or length(p_dp_id) = 0 THEN
+       DBMS_OUTPUT.PUT_LINE('dp_id is required');
+       RETURN;
+    END IF;
     IF p_is_delivered is null or length(p_is_delivered) =0 or length(p_is_delivered) != 1 or lower(p_is_delivered) not in ('y', 'n') THEN
         DBMS_OUTPUT.PUT_LINE('Delivery status is required and need to be either Y or N');
         RETURN;
@@ -844,13 +848,13 @@ BEGIN
     BEGIN
         SELECT COUNT(*) INTO v_booking_exists
         FROM booking
-        WHERE book_id = p_booking_id;
+        WHERE book_id = p_booking_id and dp_id = p_dp_id;
 
         -- If the booking ID exists, update the delivery status
         IF v_booking_exists > 0 THEN
             UPDATE booking
             SET is_delivered = UPPER(p_is_delivered)
-            WHERE book_id = p_booking_id;
+            WHERE book_id = p_booking_id and dp_id = p_dp_id;
 
             DBMS_OUTPUT.PUT_LINE('Success! Delivery status updated.');
         ELSE
