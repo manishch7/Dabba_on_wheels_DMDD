@@ -48,9 +48,9 @@ NOCYCLE;
 CREATE TABLE LOCATION (
     loc_id         NUMBER NOT NULL,
     street_address VARCHAR2(50 CHAR) NOT NULL,
-    city           VARCHAR2(20 CHAR),
-    state          VARCHAR2(20 CHAR),
-    zipcode        NUMBER(5),
+    city           VARCHAR2(20 CHAR) NOT NULL,
+    state          VARCHAR2(20 CHAR) NOT NULL,
+    zipcode        NUMBER(5) NOT NULL,
     CONSTRAINT location_pk PRIMARY KEY ( loc_id ),
     CONSTRAINT location__un UNIQUE ( street_address )
     );
