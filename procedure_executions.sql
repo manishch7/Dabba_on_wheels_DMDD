@@ -92,3 +92,75 @@ EXEC update_customer_details(p_customer_id => 555001, p_email => 'abc@email.com'
 -- Update both name and phone number
 EXEC update_customer_details(p_customer_id => 555012, p_name => 'Updated Name', p_phone_number => 9876159621);
 
+
+-- procedure 9 execution
+BEGIN
+    add_or_update_subscription_type('o1k', 123,134);
+END;
+/
+--select * from subscription_type;
+
+-- procedure 10 execution
+
+--BEGIN
+--    delete_subscription_type('WEEKLY');
+--END;
+--/
+
+-- procedure 11 execution
+BEGIN
+    add_meal('VEgq');
+END;
+/
+
+-- select * from meal;
+-- procedure 12 execution
+--
+--BEGIN
+--    delete_meal('vEg');
+--END;
+--/
+
+-- procedure 13 execution
+
+--select * from booking;
+BEGIN
+    update_booking_delivery_partner(p_booking_id => 777001, p_dp_id => null);
+    update_booking_delivery_partner(p_booking_id => 777002, p_dp_id => 333001);
+END;
+/
+
+-- procedure 14 execution
+
+--select * from DELIVERY_PARTNER;
+
+BEGIN
+    create_delivery_partner(p_d_name => 'qwertyu', p_phone_number => 9998887777, p_email => 'new_dp@example.com');
+END;
+/
+
+-- procedure 15 execution
+
+BEGIN
+    view_pending_deliveries(333001);
+END;
+/
+
+
+-- procedure 16 execution
+BEGIN
+    update_delivery_status(333001, 777005, 'y');
+END;
+/
+
+-- procedure 17 execution
+
+--select * from DELIVERY_PARTNER;
+
+BEGIN
+    update_delivery_partner(p_dp_id => null, p_d_name => 'New Express Delivery');
+    update_delivery_partner(p_dp_id => 333001);
+    update_delivery_partner(p_dp_id => 3, p_d_email => 'new_quick_ship@example.com');
+END;
+/
+
