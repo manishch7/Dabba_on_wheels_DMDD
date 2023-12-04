@@ -9,7 +9,7 @@ else 0 end) as contribution,(select sum(amount) from payment) as TOTAL_REVENUE F
 LEFT JOIN PAYMENT P ON S.SUB_ID = P.SUB_ID GROUP BY C.C_ID, C.C_NAME,P.AMOUNT ORDER BY NUM_SUBSCRIPTIONS DESC;
 
 -- 2. Delivery Status View
--- 		This view will provide delivery details for customers
+-- 		This view will provide delivery details of customers
 -- 		This view takes input from location table, booking table, meal table, delivery_partner and customer table 
 -- 	    This view generates delivery status of order, delivery date and delivery driver details 
 
@@ -55,6 +55,7 @@ select * from DELIVERY_SCHEDULE_VIEW;
 
 create or replace view DELIVERY_SCHEDULE_VIEW as
 SELECT
+    DP.DP_ID as DELIVERY_PERSON_ID,
     DP.D_NAME AS DELIVERY_PERSON,
     TO_CHAR(B.DATE_OF_DELIVERY, 'YYYY-MM-DD') AS DELIVERY_DATE,
     B.BOOK_ID,

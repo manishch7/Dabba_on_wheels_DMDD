@@ -1,8 +1,10 @@
-
+-- Customer workflow 
+---------------------------------------------------------------------------------
 -- 1. CUSTOMER_REGISTRATION_PROCEDURE
 -- input: name, dob, gender, email, phone, street_address, city, state, zipcode
 -- output: prints customer id on successful customer creation
--- exception: throws exception various cases like email or phone is null or not valid, if the colum level constraints are iolated, etc..
+-- exception: throws exception various cases like email or phone is null or not
+--valid, if the colum level constraints are iolated, etc..
 
 CREATE OR REPLACE PROCEDURE CUSTOMER_REGISTRATION_PROCEDURE (
     p_name            IN VARCHAR2,
@@ -32,7 +34,8 @@ CREATE OR REPLACE PROCEDURE CUSTOMER_REGISTRATION_PROCEDURE (
 BEGIN
 
  -- Check if the provided phone number  not equal to 10 digits
-IF p_phone_number is null or length(p_phone_number) =0 or length(p_phone_number) != 10 THEN
+IF p_phone_number is null or length(p_phone_number) =0 
+    or length(p_phone_number) != 10 THEN
         RAISE EXC_PHONE_NUMBER;
     END IF;
      -- Check if the provided gender greater than 10 characters
@@ -70,7 +73,9 @@ IF length(p_state) > 20 THEN
         end if;
 
     -- Check if the provided phone number already exists
-        SELECT count(*) INTO v_phone_count FROM CUSTOMER WHERE c_phone_number = p_phone_number;
+        SELECT count(*) INTO v_phone_count FROM CUSTOMER 
+        WHERE c_phone_number = p_phone_number;
+        
         -- If the phone number exists, raise an exception
        if v_phone_count>0 THEN
             RAISE v_phone_exists;
@@ -91,7 +96,8 @@ IF length(p_state) > 20 THEN
 
     -- Create a new customer record
     INSERT INTO CUSTOMER (c_id, loc_id, c_name, dob, gender, c_email, c_phone_number)
-    VALUES (CUSTOMER_SEQ.NEXTVAL, v_loc_id, p_name, p_dob, p_gender, p_email, p_phone_number)
+    VALUES (CUSTOMER_SEQ.NEXTVAL, v_loc_id, p_name, p_dob, 
+    p_gender, p_email, p_phone_number)
     RETURNING c_id INTO v_c_id;
 
     -- Set the output parameter with the customer ID
@@ -143,9 +149,11 @@ END ViewAllSubscriptionTypes;
 -- 3. PurchaseSubscription
 -- INPUT : customer id, subscription type, payment amount
 -- OUTPUT: payment is recorded and enrolled for subscription
--- DESCRIPTION AND EXCEPTIONS: checks if customer exisits in system or not, creates subscription only if there is an active subscription
--- and meal count is greater than 0 else need to use the current subscription for meal booking, checks if subscription type amount
---equal to payment amount only then transaction carries forward else need to retry
+-- DESCRIPTION AND EXCEPTIONS: checks if customer exisits in system or not, 
+-- creates subscription only if there is an active subscription and meal count 
+-- is greater than 0 else need to use the current subscription for meal booking,
+-- checks if subscription type amount equal to payment amount only then
+-- transaction carries forward else need to retry
 
 CREATE OR REPLACE PROCEDURE PurchaseSubscription(
     p_customer_id IN NUMBER,
@@ -182,13 +190,15 @@ BEGIN
 
         -- Check if the payment amount matches the subscription price
         
-        select count(*) into v_customer_exists_count from customer where c_id = p_customer_id;
+        select count(*) into v_customer_exists_count from customer 
+        where c_id = p_customer_id;
         
         if v_customer_exists_count = 0 then
         raise EXC_CUS_NOT_EXISTS;
         end if;
 
-        SELECT count(s.sub_id) into v_sub_exists_count FROM customer c JOIN subscription s ON c.c_id = s.c_id 
+        SELECT count(s.sub_id) into v_sub_exists_count FROM customer c 
+        JOIN subscription s ON c.c_id = s.c_id 
         where s.end_date >= sysdate and s.c_id =p_customer_id and s.no_of_meals_left>0;
         
         if v_sub_exists_count>0 then
@@ -197,8 +207,10 @@ BEGIN
       -- Check if the payment amount matches the subscription price
         IF p_payment_amount = v_subscription_price THEN
             -- Insert subscription record
-            INSERT INTO subscription(sub_id, start_date, end_date, sub_type_id, c_id, no_of_meals_left)
-            VALUES (sub_seq.NEXTVAL, SYSDATE, SYSDATE + 7, v_subscription_type_id, p_customer_id, v_subscription_meal_count);
+            INSERT INTO subscription(sub_id, start_date, end_date, sub_type_id,
+            c_id, no_of_meals_left)
+            VALUES (sub_seq.NEXTVAL, SYSDATE, SYSDATE + 7, v_subscription_type_id,
+            p_customer_id, v_subscription_meal_count);
             
             -- Insert payment record
             INSERT INTO payment(pay_id, sub_id, transaction_date, amount)
@@ -250,7 +262,8 @@ END ViewAllMealTypes;
 -- 5. book_meal
 -- INPUT: Customer_id, meal type, time slot, delivery date
 -- OUTPUT: creates a booking record in the system for speified time slot and date for the customer
--- DESCRIPTION AND EXCEPTIONS : checks if active subscription or not, delivery date is valid or not and checks all the column level constraints
+-- DESCRIPTION AND EXCEPTIONS : checks if active subscription or not, delivery date
+-- is valid or not and checks all the column level constraints
 
 CREATE OR REPLACE PROCEDURE book_meal (
     p_customer_id    IN NUMBER,
@@ -264,25 +277,28 @@ CREATE OR REPLACE PROCEDURE book_meal (
     v_count number;
     no_of_meals number;
 BEGIN
-    -- Check if the customer has an active subscription
-    SELECT MAX(s.end_date) INTO v_sub_end_date
-    FROM subscription s
-    WHERE s.c_id = p_customer_id
-    AND s.end_date >= TRUNC(SYSDATE);
 
-    if p_meal_type is NULL or length(p_meal_type)<1 then --or lower(p_meal_type) not in (select lower(type) from meal) then
+    if p_meal_type is NULL or length(p_meal_type)<1 then
     RAISE EXC_MEAL;
     end if;
 
-    SELECT COUNT(*) INTO v_count FROM (SELECT LOWER(type) as type FROM meal) WHERE type = LOWER(p_meal_type);
+    SELECT COUNT(*) INTO v_count FROM (SELECT LOWER(type) as type FROM meal) 
+    WHERE type = LOWER(p_meal_type);
 
   IF v_count = 0 THEN
     RAISE EXC_MEAL;
   END IF;
     
-    if p_time_slot is NULL or length(p_time_slot)<1 or lower(p_time_slot) not in ('afternoon','night') then
+    if p_time_slot is NULL or length(p_time_slot)<1 or lower(p_time_slot) 
+    not in ('afternoon','night') then
     RAISE EXC_TIME_SLOT;
     end if;
+    
+    -- Check if the customer has an active subscription
+    SELECT MAX(s.end_date) INTO v_sub_end_date
+    FROM subscription s
+    WHERE s.c_id = p_customer_id
+    AND s.end_date >= TRUNC(SYSDATE);
     
     IF v_sub_end_date IS NULL THEN
         DBMS_OUTPUT.PUT_LINE('Customer does not have an active subscription.');
@@ -290,13 +306,14 @@ BEGIN
     END IF;
 
     -- Check if the delivery date is valid
-    IF p_delivery_date <= TRUNC(SYSDATE) THEN
-        DBMS_OUTPUT.PUT_LINE('Delivery date must be greater than today.');
+    IF p_delivery_date <= TRUNC(SYSDATE) or p_delivery_date > v_sub_end_date THEN
+        DBMS_OUTPUT.PUT_LINE('Delivery date must be between tommorrow and subscription enddate ');
         RETURN;
     END IF;
     
     select no_of_meals_left into no_of_meals from subscription 
-    where sub_id = (SELECT s.sub_id FROM subscription s WHERE s.c_id = p_customer_id AND s.end_date >= TRUNC(SYSDATE));
+    where sub_id = (SELECT s.sub_id FROM subscription s WHERE s.c_id = p_customer_id
+    AND s.end_date >= TRUNC(SYSDATE));
     
     IF no_of_meals <= 0 THEN
     DBMS_OUTPUT.PUT_LINE('Out of meals! Please purchase a subscription');
@@ -304,13 +321,17 @@ BEGIN
     END IF;
 
     -- Proceed with the booking process
-    INSERT INTO booking ( book_id,c_id,sub_id,meal_id,booking_date,date_of_delivery,time_slot,dp_id,is_delivered)
-    VALUES (booking_seq.NEXTVAL,p_customer_id,(SELECT s.sub_id FROM subscription s WHERE s.c_id = p_customer_id AND s.end_date >= TRUNC(SYSDATE)),
-        (SELECT m.meal_id FROM meal m WHERE m.type = upper(p_meal_type)), SYSDATE, p_delivery_date, upper(p_time_slot),
+    INSERT INTO booking ( book_id,c_id,sub_id,meal_id,booking_date,date_of_delivery,
+    time_slot,dp_id,is_delivered)
+    VALUES (booking_seq.NEXTVAL,p_customer_id,(SELECT s.sub_id FROM subscription s
+    WHERE s.c_id = p_customer_id AND s.end_date >= TRUNC(SYSDATE)),
+        (SELECT m.meal_id FROM meal m WHERE m.type = upper(p_meal_type)),
+        SYSDATE, p_delivery_date, upper(p_time_slot),
         NULL,'N');
         
     update subscription set no_of_meals_left = no_of_meals_left - 1 
-    where sub_id = (SELECT s.sub_id FROM subscription s WHERE s.c_id = p_customer_id AND s.end_date >= TRUNC(SYSDATE));
+    where sub_id = (SELECT s.sub_id FROM subscription s WHERE s.c_id = p_customer_id
+    AND s.end_date >= TRUNC(SYSDATE));
     
     DBMS_OUTPUT.PUT_LINE('Meal booked successfully!');
 EXCEPTION
@@ -386,10 +407,12 @@ BEGIN
         WHERE CUSTOMER_ID = p_customer_id
     ) LOOP
         DBMS_OUTPUT.PUT_LINE('---------------------------------------------------');
-        DBMS_OUTPUT.PUT_LINE('Booking ID: ' || delivery_rec.BOOK_ID ||' | ' ||'Customer ID: ' || delivery_rec.CUSTOMER_ID || ' | ' ||
-        'Delivery Date: ' || TO_CHAR(delivery_rec.DATE_OF_DELIVERY, 'YYYY-MM-DD') || ' | ' ||
-        'Time Slot: ' || delivery_rec.TIME_SLOT || ' | ' || 'Delivery Partner: ' || delivery_rec.delivery_person ||
-        ' | ' || 'Is Delivered: ' || delivery_rec.delivery_status);
+        DBMS_OUTPUT.PUT_LINE('Booking ID: ' || delivery_rec.BOOK_ID ||' | ' 
+        ||'Customer ID: ' || delivery_rec.CUSTOMER_ID || ' | ' || 'Delivery Date: ' ||
+        TO_CHAR(delivery_rec.DATE_OF_DELIVERY, 'YYYY-MM-DD') || ' | ' ||
+        'Time Slot: ' || delivery_rec.TIME_SLOT || ' | ' || 'Delivery Partner: '
+        || delivery_rec.delivery_person || ' | ' || 'Is Delivered: ' ||
+        delivery_rec.delivery_status);
     END LOOP;
     DBMS_OUTPUT.PUT_LINE('---------------------------------------------------');
 END get_delivery_details;
@@ -398,8 +421,8 @@ END get_delivery_details;
 -- 8. update_customer_details
 -- INPUT: customer_id or/and name or/and dob or/and gender or/and email or/and hone number. 
 -- OUTPUT: updates the correspondeing customer record with new details.
--- DESCRIPTION AND EXCEPTION: this procedure checks if customer exists in system or not if exists then it is used
--- to get delivery details of all the bookings made by the customer.
+-- DESCRIPTION AND EXCEPTION: this procedure checks if customer exists in system
+-- or not if exists then it is used to get delivery details of all the bookings made by the customer.
 CREATE OR REPLACE PROCEDURE update_customer_details (
     p_customer_id   IN NUMBER,
     p_name          IN VARCHAR2 DEFAULT NULL,
@@ -433,13 +456,16 @@ BEGIN
     
     -- Check if the provided email already exists
         SELECT count(*) INTO v_email_count FROM CUSTOMER WHERE c_email = p_email and c_id != p_customer_id;
+        
         -- If the email exists, raise an exception
         if v_email_count>0 THEN
             RAISE v_email_exists;
         end if;
 
     -- Check if the provided phone number already exists
-        SELECT count(*) INTO v_phone_count FROM CUSTOMER WHERE c_phone_number = p_phone_number and c_id != p_customer_id;
+        SELECT count(*) INTO v_phone_count FROM CUSTOMER 
+        WHERE c_phone_number = p_phone_number and c_id != p_customer_id;
+        
         -- If the phone number exists, raise an exception
        if v_phone_count>0 THEN
             RAISE v_phone_exists;
@@ -474,4 +500,434 @@ BEGIN
    WHEN OTHERS THEN
         DBMS_OUTPUT.PUT_LINE('Error: An unexpected error occurred.');
 END update_customer_details;
+/
+
+-- End of Customer workflow
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+
+-- Manager workflow
+
+-- 9. add_or_update_subscription_type
+-- INPUT:  type(required param), price, meal count
+-- OUTPUT: updates the corresponding sub type record with new details or create a new one.
+-- DESCRIPTION AND EXCEPTION: this procedure checks if sub type is valid or not 
+-- and all column level constraints.
+
+SET SERVEROUTPUT ON        
+CREATE OR REPLACE PROCEDURE add_or_update_subscription_type (
+    p_type IN VARCHAR2,
+    p_price IN NUMBER DEFAULT NULL,
+    p_meal_count IN NUMBER DEFAULT NULL
+) IS
+BEGIN
+    -- checks if sub type valid or not
+    IF p_type is null or length(p_type) =0 or length(p_type) > 10 THEN
+        DBMS_OUTPUT.PUT_LINE('type is required and need to be less than 10 charcters length');
+        return;
+    END IF;
+     -- checks if meal count is more than 9999
+    IF length(p_meal_count) > 4 THEN
+        DBMS_OUTPUT.PUT_LINE('meal count cant be more than 9999');
+        return;
+    END IF;
+
+    -- Check if the subscription type already exists
+    DECLARE
+        v_type_exists NUMBER;
+    BEGIN
+        SELECT COUNT(*) INTO v_type_exists
+        FROM subscription_type
+        WHERE lower(type) = lower(p_type);
+        -- If the type exists, update the record
+        IF v_type_exists > 0 THEN
+            UPDATE subscription_type
+            SET price = NVL(p_price, price),
+                meal_count = NVL(p_meal_count, meal_count)
+            WHERE lower(type) = lower(p_type);
+
+            DBMS_OUTPUT.PUT_LINE('Success! Subscription type updated.');
+        ELSE
+            -- If the type does not exist, insert a new record
+            INSERT INTO subscription_type (sub_type_id, type, price, meal_count)
+            VALUES (SUB_TYPE_SEQ.NEXTVAL, p_type, p_price, p_meal_count);
+
+            DBMS_OUTPUT.PUT_LINE('Success! New subscription type added.');
+        END IF;
+    EXCEPTION
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
+    END;
+END add_or_update_subscription_type;
+/
+
+
+-- 10. delete_subscription_type
+-- INPUT:  type(required param)
+-- OUTPUT: updates the corresponding sub type record with new details or create a new one.
+-- DESCRIPTION AND EXCEPTION: this procedure checks if sub type is valid or not 
+-- and all column level constraints.
+--SET SERVEROUTPUT ON        
+--CREATE OR REPLACE PROCEDURE delete_subscription_type (
+--    p_type IN VARCHAR2
+--) IS
+--BEGIN
+--    -- Check if the subscription type exists
+--    DECLARE
+--        v_type_exists NUMBER;
+--    BEGIN
+--    
+--        -- checks if sub type valid or not
+--        IF p_type is null or length(p_type) =0 or length(p_type) > 10 THEN
+--        DBMS_OUTPUT.PUT_LINE('type is required and need to be less than 10 charcters length');
+--        return;
+--        END IF;
+--        
+--        SELECT COUNT(*) INTO v_type_exists
+--        FROM subscription_type
+--        WHERE type = p_type;
+--
+--        -- If the type exists, delete the record
+--        IF v_type_exists > 0 THEN
+--            DELETE FROM subscription_type
+--            WHERE lower(type) = lower(p_type);
+--
+--            DBMS_OUTPUT.PUT_LINE('Success! Subscription type deleted.');
+--        ELSE
+--            -- If the type does not exist, display an error message
+--            DBMS_OUTPUT.PUT_LINE('Error: Subscription type does not exist. please enter a valid type');
+--        END IF;
+--    EXCEPTION
+--        WHEN OTHERS THEN
+--            DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
+--    END;
+--
+--END delete_subscription_type;
+--/
+
+-- 11. add_meal
+-- INPUT:  type(required param)
+-- OUTPUT:creates a new meal type if already exists prompts the user with warning message.
+-- DESCRIPTION AND EXCEPTION: this procedure checks if meal type is valid or not 
+-- and all column level constraints.
+SET SERVEROUTPUT ON        
+CREATE OR REPLACE PROCEDURE add_meal (
+    p_meal_type IN VARCHAR2
+) IS
+BEGIN
+    -- checks if sub type valid or not
+    IF p_meal_type is null or length(p_meal_type) =0 or length(p_meal_type) > 10 THEN
+        DBMS_OUTPUT.PUT_LINE('type is required and need to be less than 10 charcters length');
+        RETURN;
+    END IF;
+    -- Check if the meal type already exists
+    DECLARE
+        v_type_exists NUMBER;
+    BEGIN
+        SELECT COUNT(*) INTO v_type_exists
+        FROM meal
+        WHERE lower(type) = lower(p_meal_type);
+
+        -- If the meal type does not exist, insert a new record
+        IF v_type_exists = 0 THEN
+            INSERT INTO meal (meal_id,type)
+            VALUES (MEAL_SEQ.NEXTVAL,p_meal_type);
+
+            DBMS_OUTPUT.PUT_LINE('Success! Meal added.');
+        ELSE
+            -- If the meal type already exists, display an error message
+            DBMS_OUTPUT.PUT_LINE('Error: Meal type already exists.');
+        END IF;
+    EXCEPTION
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
+    END;
+
+END add_meal;
+/
+
+-- 12. delete_subscription_type
+-- INPUT:  type(required param)
+-- OUTPUT: updates the corresponding sub type record with new details or create a new one.
+-- DESCRIPTION AND EXCEPTION: this procedure checks if sub type is valid or not 
+-- and all column level constraints.
+--
+--SET SERVEROUTPUT ON
+--CREATE OR REPLACE PROCEDURE delete_meal (
+--    p_meal_type IN VARCHAR2
+--) IS
+--BEGIN
+--    -- checks if meal type valid or not
+--    IF p_meal_type is null or length(p_meal_type) =0 or length(p_meal_type) > 10 THEN
+--        DBMS_OUTPUT.PUT_LINE('type is required and need to be less than 10 charcters length');
+--        RETURN;
+--    END IF;
+--    -- Check if the meal ID exists
+--    DECLARE
+--        v_meal_exists NUMBER;
+--    BEGIN
+--        SELECT COUNT(*) INTO v_meal_exists
+--        FROM meal
+--        WHERE lower(type) = lower(p_meal_type);
+--
+--        -- If the meal ID exists, delete the record
+--        IF v_meal_exists > 0 THEN
+--            DELETE FROM meal
+--            WHERE lower(type) = lower(p_meal_type);
+--
+--            DBMS_OUTPUT.PUT_LINE('Success! Meal deleted.');
+--        ELSE
+--            -- If the meal ID does not exist, display an error message
+--            DBMS_OUTPUT.PUT_LINE('Error: Meal Type does not exist.');
+--        END IF;
+--    EXCEPTION
+--        WHEN OTHERS THEN
+--            DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
+--    END;
+--
+--END delete_meal;
+--/
+--
+
+-- 13. update_booking_delivery_partner
+-- INPUT:  p_booking_id(required param), p_dp_id (required param)
+-- OUTPUT: updates the corresponding sub record with dp_id and displays success message or error message.
+-- DESCRIPTION AND EXCEPTION: this procedure checks if sub type is valid or not 
+-- and all column level constraints.
+
+SET SERVEROUTPUT ON
+CREATE OR REPLACE PROCEDURE update_booking_delivery_partner (
+    p_booking_id      IN NUMBER,
+    p_dp_id           IN NUMBER
+) IS
+BEGIN
+    IF p_booking_id is null or length(p_booking_id) =0 THEN
+       DBMS_OUTPUT.PUT_LINE('booking_id is required');
+       RETURN;
+    END IF;
+    IF p_dp_id is null or length(p_dp_id) =0 THEN
+       DBMS_OUTPUT.PUT_LINE('dp_id is required');
+       RETURN;
+    END IF;
+    
+    UPDATE BOOKING
+    SET dp_id = p_dp_id
+    WHERE book_id = p_booking_id;
+
+    COMMIT;
+
+    DBMS_OUTPUT.PUT_LINE('Booking ' || p_booking_id || ' updated with Delivery Partner ID ' || p_dp_id || ' successfully.');
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('Booking ' || p_booking_id || ' not found.');
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error updating Booking ' || p_booking_id || ': ' || SQLERRM);
+END update_booking_delivery_partner;
+/
+
+
+-- 14. create_delivery_partner
+-- INPUT:  p_booking_id(required param), p_dp_id (required param)
+-- OUTPUT: updates the corresponding sub record with dp_id and displays success message or error message.
+-- DESCRIPTION AND EXCEPTION: this procedure checks if sub type is valid or not 
+-- and all column level constraints.
+
+SET SERVEROUTPUT ON
+CREATE OR REPLACE PROCEDURE create_delivery_partner (
+    p_d_name         IN VARCHAR2,
+    p_phone_number   IN NUMBER,
+    p_email          IN VARCHAR2
+) IS
+EXC_PHONE_NUMBER EXCEPTION;
+EXC_NAME EXCEPTION;
+EXC_EMAIL EXCEPTION;
+BEGIN
+     -- Check if the provided phone number  not equal to 10 digits
+    IF length(p_phone_number) =0 or length(p_phone_number) != 10 THEN
+        RAISE EXC_PHONE_NUMBER;
+    END IF;
+         -- Check if the provided phone number  not equal to 10 digits
+    IF p_d_name is null or length(p_d_name) =0 or length(p_d_name) > 20 THEN
+        RAISE EXC_NAME;
+    END IF;
+     -- Check if the provided email greater than 50 characters
+    IF length(p_email) =0 or length(p_email) > 50 THEN
+        RAISE EXC_EMAIL;
+    END IF;
+    
+    INSERT INTO DELIVERY_PARTNER (dp_id, d_name, d_phone_number, d_email)
+    VALUES (DP_SEQ.NEXTVAL, p_d_name, p_phone_number, p_email);
+
+    COMMIT;
+
+    DBMS_OUTPUT.PUT_LINE('Delivery Partner created successfully.');
+EXCEPTION
+    WHEN EXC_NAME THEN
+        DBMS_OUTPUT.PUT_LINE('Cname cant be empty or more than 20 characters');
+    WHEN EXC_PHONE_NUMBER THEN
+        DBMS_OUTPUT.PUT_LINE('Mobile phone number cant be empty and should be 10 digit number');
+    WHEN EXC_EMAIL THEN
+        DBMS_OUTPUT.PUT_LINE('email cant be empty and should not be more than 50 characters');
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('Delivery Partner ' || ' not found.');
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error creating Delivery Partner ' || DP_SEQ.CURRVAL || ': ' || SQLERRM);
+END create_delivery_partner;
+/
+
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+-- Delivery partner workflow
+
+-- 15. view_pending_deliveries
+-- INPUT:  dp_id(required param)
+-- OUTPUT: fetches pending deliveries for a deliery person
+-- DESCRIPTION AND EXCEPTION: this procedure checks if dp id is exists or not 
+-- and all column level constraints.
+
+SET SERVEROUTPUT ON
+CREATE OR REPLACE PROCEDURE view_pending_deliveries (
+    p_dp_id IN NUMBER
+    
+) IS
+count_num NUMBER DEFAULT 0;
+BEGIN
+    FOR delivery_rec IN (
+        SELECT *
+        FROM DELIVERY_SCHEDULE_VIEW
+        WHERE DELIVERY_PERSON_ID = p_dp_id
+          AND delivery_status = 'N'
+    ) LOOP
+        count_num:= count_num + 1;
+        DBMS_OUTPUT.PUT_LINE('Delivery ID: ' || delivery_rec.DELIVERY_PERSON_ID || ' | ' ||
+                            'Customer Name: ' || delivery_rec.customer_name || ' | ' ||
+                            'Booking id: ' || delivery_rec.book_id || ' | ' ||
+                            'TIMESLOT: ' || DELIVERY_REC.TIME_SLOT || ' | ' ||
+                            'Delivery Date: ' || delivery_rec.delivery_date || ' | ' ||
+                            'delivery address: ' || delivery_rec.DELIVERY_ADDRESS
+                            
+                            );
+    END LOOP;
+    IF count_num = 0 THEN
+        DBMS_OUTPUT.PUT_LINE('Dp id doesnt exists!');
+    END IF;
+    DBMS_OUTPUT.PUT_LINE('---------------------------------------------------');
+END view_pending_deliveries;
+/
+
+
+-- 16. update_delivery_status
+-- INPUT:  booking_id(required param) and delivery status (required param)
+-- OUTPUT: updates the corresponding sub record with delivery status.
+-- DESCRIPTION AND EXCEPTION: this procedure checks if booking id and is_delivered is valid or not 
+-- and all column level constraints.
+CREATE OR REPLACE PROCEDURE update_delivery_status (
+    p_booking_id IN NUMBER,
+    p_is_delivered IN VARCHAR2
+) IS
+BEGIN
+    IF p_booking_id is null or length(p_booking_id) =0 THEN
+       DBMS_OUTPUT.PUT_LINE('booking_id is required');
+       RETURN;
+    END IF;
+    
+    IF p_is_delivered is null or length(p_is_delivered) =0 or length(p_is_delivered) != 1 or lower(p_is_delivered) not in ('y', 'n') THEN
+        DBMS_OUTPUT.PUT_LINE('Delivery status is required and need to be either Y or N');
+        RETURN;
+    END IF;
+    -- Check if the booking ID exists
+    DECLARE
+        v_booking_exists NUMBER;
+    BEGIN
+        SELECT COUNT(*) INTO v_booking_exists
+        FROM booking
+        WHERE book_id = p_booking_id;
+
+        -- If the booking ID exists, update the delivery status
+        IF v_booking_exists > 0 THEN
+            UPDATE booking
+            SET is_delivered = UPPER(p_is_delivered)
+            WHERE book_id = p_booking_id;
+
+            DBMS_OUTPUT.PUT_LINE('Success! Delivery status updated.');
+        ELSE
+            -- If the booking ID does not exist, display an error message
+            DBMS_OUTPUT.PUT_LINE('Error: Booking does not exist.');
+        END IF;
+    EXCEPTION
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
+    END;
+
+END update_delivery_status;
+/
+
+-- 17. update_delivery_partner
+-- INPUT:  dp_id (required param), name, phone, email.
+-- OUTPUT: updates the corresponding dp record with new data.
+-- DESCRIPTION AND EXCEPTION: this procedure checks if dp id is valid or not 
+-- and all column level constraints and updates accordingly.
+
+CREATE OR REPLACE PROCEDURE update_delivery_partner (
+    p_dp_id           IN NUMBER,
+    p_d_name          IN VARCHAR2 DEFAULT NULL,
+    p_phone_number    IN NUMBER DEFAULT NULL,
+    p_d_email         IN VARCHAR2 DEFAULT NULL
+) IS
+EXC_PHONE_NUMBER EXCEPTION;
+EXC_NAME EXCEPTION;
+EXC_EMAIL EXCEPTION;
+v_dp_exists number;
+BEGIN
+
+    IF p_dp_id is null or length(p_dp_id) =0 THEN
+       DBMS_OUTPUT.PUT_LINE('dp_id is required');
+       RETURN;
+    END IF;
+
+     -- Check if the provided phone number  not equal to 10 digits
+    IF length(p_phone_number) =0 or length(p_phone_number) != 10 THEN
+        RAISE EXC_PHONE_NUMBER;
+    END IF;
+         -- Check if the provided phone number  not equal to 10 digits
+    IF length(p_d_name) =0 or length(p_d_name) > 20 THEN
+        RAISE EXC_NAME;
+    END IF;
+     -- Check if the provided email greater than 50 characters
+    IF length(p_d_email) =0 or length(p_d_email) > 50 THEN
+        RAISE EXC_EMAIL;
+    END IF;
+    
+    select count(*) into v_dp_exists from DELIVERY_PARTNER where dp_id = p_dp_id;
+    
+    if v_dp_exists = 0 then
+        DBMS_OUTPUT.PUT_LINE('DP_ID ' || p_dp_id || ' doesnt exists');
+        return;
+    end if;
+    
+    UPDATE DELIVERY_PARTNER
+    SET
+        d_name = NVL(p_d_name, d_name),
+        d_phone_number = NVL(p_phone_number, d_phone_number),
+        d_email = NVL(p_d_email, d_email)
+    WHERE dp_id = p_dp_id;
+
+    COMMIT;
+
+    DBMS_OUTPUT.PUT_LINE('Delivery Partner ' || p_dp_id || ' updated successfully.');
+EXCEPTION
+    WHEN EXC_NAME THEN
+        DBMS_OUTPUT.PUT_LINE('Cname cant be empty or more than 20 characters');
+    WHEN EXC_PHONE_NUMBER THEN
+        DBMS_OUTPUT.PUT_LINE('Mobile phone number cant be empty and should be 10 digit number');
+    WHEN EXC_EMAIL THEN
+        DBMS_OUTPUT.PUT_LINE('email cant be empty and should not be more than 50 characters');
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('Delivery Partner ' || p_dp_id || ' not found.');
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error updating Delivery Partner ' || p_dp_id || ': ' || SQLERRM);
+END update_delivery_partner;
 /

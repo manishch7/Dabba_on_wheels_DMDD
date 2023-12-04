@@ -34,6 +34,8 @@ WHILE I<5
 					DBMS_OUTPUT.PUT_LINE('NO OBJECTS EXISTS IN DATABASE');
 			      END IF;
             END IF;
+            END IF;
+            END IF;
 END LOOP;
 DBMS_OUTPUT.PUT_LINE('DATABASE CLEANUP DONE SUCCESSFULLY');
 END;
@@ -80,9 +82,6 @@ CREATE TABLE SUBSCRIPTION_TYPE (
     price       NUMBER,
     meal_count  NUMBER(4),
  CONSTRAINT subscription_type_pk PRIMARY KEY ( sub_type_id ),
- CONSTRAINT CHK_TYPE CHECK (TYPE IN ('WEEKLY', 'MONTHLY')),
- CONSTRAINT CHK_PRICE CHECK (PRICE IN (50, 180)),
- CONSTRAINT CHK_COUNT CHECK (MEAL_COUNT IN (10, 45)),
  CONSTRAINT subscription_type__un UNIQUE ( type )
  );
 /
@@ -132,8 +131,9 @@ CREATE TABLE MEAL (
     meal_id NUMBER NOT NULL,
     type    VARCHAR2(10 CHAR) NOT NULL,
     CONSTRAINT meal_pk PRIMARY KEY ( meal_id ),
-    CONSTRAINT meal_un UNIQUE ( type ),
-    CONSTRAINT CHK_MTYPE CHECK (TYPE IN ('VEG','NON-VEG','VEGAN','HALAL')));
+    CONSTRAINT meal_un UNIQUE ( type )
+   -- CONSTRAINT CHK_MTYPE CHECK (TYPE IN ('VEG','NON-VEG','VEGAN','HALAL'))
+   );
 /
 -- Inserting data into the MEAL table
 INSERT INTO MEAL (meal_id, type)
