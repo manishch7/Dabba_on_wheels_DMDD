@@ -6,6 +6,7 @@
 -- exception: throws exception various cases like email or phone is null or not
 --valid, if the colum level constraints are iolated, etc..
 
+SET SERVEROUTPUT ON
 CREATE OR REPLACE PROCEDURE CUSTOMER_REGISTRATION_PROCEDURE (
     p_name            IN VARCHAR2,
     p_dob             IN DATE,
@@ -48,19 +49,19 @@ IF p_email is null or length(p_email) =0 or length(p_email) > 50 THEN
         RAISE EXC_EMAIL;
     END IF;
      -- Check if the provided address greater than 50 characters
-IF length(p_street_address) > 50 THEN
+IF p_street_address is null or length(p_street_address) =0 or length(p_street_address) > 50 THEN
         RAISE EXC_STREET;
     END IF;
      -- Check if the provided city greater than 20 characters
-IF length(p_city) > 20 THEN
+IF p_city is null or length(p_city) =0 or length(p_city) > 20 THEN
         RAISE EXC_CITY;
     END IF;
      -- Check if the provided state greater than 20 characters
-IF length(p_state) > 20 THEN
+IF p_state is null or length(p_state) =0 or length(p_state) > 20 THEN
         RAISE EXC_STATE;
     END IF;
          -- Check if the provided zipcode is not equal to 5 digits
-    IF length(p_zipcode) != 5 THEN
+    IF p_zipcode is null or length(p_zipcode) =0 or length(p_zipcode) != 5 THEN
         RAISE EXC_ZIP;
     END IF;
     
@@ -117,13 +118,13 @@ EXCEPTION
     WHEN EXC_GENDER THEN
         DBMS_OUTPUT.PUT_LINE('gender should not be more than 10 characters');
     WHEN EXC_STREET THEN
-        DBMS_OUTPUT.PUT_LINE('street address should not be more than 50 characters');
+        DBMS_OUTPUT.PUT_LINE('street address is required and should not be more than 50 characters');
     WHEN EXC_CITY THEN
-        DBMS_OUTPUT.PUT_LINE('city should not be more than 20 characters');
+        DBMS_OUTPUT.PUT_LINE('city is required and should not be more than 20 characters');
     WHEN EXC_STATE THEN
-        DBMS_OUTPUT.PUT_LINE('state should not be more than 50 characters');
+        DBMS_OUTPUT.PUT_LINE('state is required and should not be more than 50 characters');
     WHEN EXC_ZIP THEN
-        DBMS_OUTPUT.PUT_LINE('zipcode should be equal 5 digit number');
+        DBMS_OUTPUT.PUT_LINE('zipcode is required and should be equal 5 digit number');
    WHEN OTHERS THEN
         DBMS_OUTPUT.PUT_LINE('Error: An unexpected error occurred.');
 END CUSTOMER_REGISTRATION_PROCEDURE;
@@ -133,6 +134,7 @@ END CUSTOMER_REGISTRATION_PROCEDURE;
 -- input: None
 -- output: displays all the subscription types available in the system.
 -- exception: None
+SET SERVEROUTPUT ON
 CREATE OR REPLACE PROCEDURE ViewAllSubscriptionTypes IS
 BEGIN
     FOR sub_type_rec IN (
@@ -154,7 +156,7 @@ END ViewAllSubscriptionTypes;
 -- is greater than 0 else need to use the current subscription for meal booking,
 -- checks if subscription type amount equal to payment amount only then
 -- transaction carries forward else need to retry
-
+SET SERVEROUTPUT ON
 CREATE OR REPLACE PROCEDURE PurchaseSubscription(
     p_customer_id IN NUMBER,
     p_subscription_type IN VARCHAR2,
@@ -246,7 +248,7 @@ END PurchaseSubscription;
 -- input: None
 -- output: displays all the meal types available in the system.
 -- exception: None
-
+SET SERVEROUTPUT ON
 CREATE OR REPLACE PROCEDURE ViewAllMealTypes IS
 BEGIN
     FOR meal_type_rec IN (
@@ -264,7 +266,7 @@ END ViewAllMealTypes;
 -- OUTPUT: creates a booking record in the system for speified time slot and date for the customer
 -- DESCRIPTION AND EXCEPTIONS : checks if active subscription or not, delivery date
 -- is valid or not and checks all the column level constraints
-
+SET SERVEROUTPUT ON
 CREATE OR REPLACE PROCEDURE book_meal (
     p_customer_id    IN NUMBER,
     p_meal_type      IN VARCHAR2,
@@ -351,7 +353,7 @@ END book_meal;
 -- OUTPUT: prints all the payment details made till date  
 -- DESCRIPTION AND EXCEPTION: checks if customer exists in system or not 
 -- if exists displays all the payments in chronological order else displays error message
-
+SET SERVEROUTPUT ON
 CREATE OR REPLACE PROCEDURE generate_invoice (
     p_customer_id IN NUMBER
 ) IS
@@ -390,7 +392,7 @@ END generate_invoice;
 -- OUTPUT: prints delivery details
 -- DESCRIPTION AND EXCEPTION: this procedure checks if customer exists in system or not if exists then it is used
 -- to get delivery details of all the bookings made by the customer.
-
+SET SERVEROUTPUT ON
 CREATE OR REPLACE PROCEDURE get_delivery_details (
     p_customer_id IN NUMBER
 ) IS
@@ -423,6 +425,7 @@ END get_delivery_details;
 -- OUTPUT: updates the correspondeing customer record with new details.
 -- DESCRIPTION AND EXCEPTION: this procedure checks if customer exists in system
 -- or not if exists then it is used to get delivery details of all the bookings made by the customer.
+SET SERVEROUTPUT ON
 CREATE OR REPLACE PROCEDURE update_customer_details (
     p_customer_id   IN NUMBER,
     p_name          IN VARCHAR2 DEFAULT NULL,
@@ -824,6 +827,7 @@ END view_pending_deliveries;
 -- OUTPUT: updates the corresponding sub record with delivery status.
 -- DESCRIPTION AND EXCEPTION: this procedure checks if booking id and is_delivered is valid or not 
 -- and all column level constraints.
+SET SERVEROUTPUT ON
 CREATE OR REPLACE PROCEDURE update_delivery_status (
     p_dp_id      IN NUMBER,
     p_booking_id IN NUMBER,
@@ -874,7 +878,7 @@ END update_delivery_status;
 -- OUTPUT: updates the corresponding dp record with new data.
 -- DESCRIPTION AND EXCEPTION: this procedure checks if dp id is valid or not 
 -- and all column level constraints and updates accordingly.
-
+SET SERVEROUTPUT ON
 CREATE OR REPLACE PROCEDURE update_delivery_partner (
     p_dp_id           IN NUMBER,
     p_d_name          IN VARCHAR2 DEFAULT NULL,
