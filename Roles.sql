@@ -1,47 +1,98 @@
---drop user C00001 cascade;
---
 --drop role customer;
 
+SET SERVEROUTPUT ON
+/
+BEGIN
+  FOR audit_rec IN (select * from dba_roles where oracle_maintained = 'N')
+  LOOP
+    BEGIN
+      EXECUTE IMMEDIATE 'DROP ROLE ' || audit_rec.role;
+      DBMS_OUTPUT.PUT_LINE('Dropped the role: ' || audit_rec.role);
+      delete user_audit where user_name = audit_rec.role;
+      DBMS_OUTPUT.PUT_LINE('=======================================================');
+    EXCEPTION
+      WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error dropping role ' || audit_rec.role || ': ' || SQLERRM);
+        DBMS_OUTPUT.PUT_LINE('=======================================================');
+    END;
+  END LOOP;
+END;
+/
+
 --CREATES ROLES 
+
 CREATE ROLE CUSTOMER;
 CREATE ROLE MANAGER;
 CREATE ROLE DELIVERY_PERSON;
 
-
 -- Customer
 -- grant permission to views
 -------------------------------
-/
-GRANT SELECT ON  DELIVERY_DETAILS_VIEW TO CUSTOMER;
-/
-GRANT SELECT ON  CUSTOMER_CHOICE_BY_SEASON_VIEW TO CUSTOMER;
 
---select * from DELIVERY_DETAILS_VIEW
+GRANT SELECT ON admin.POPULAR_MEAL_BY_SUBSCRIPTION_VIEW TO CUSTOMER;
+/
+GRANT SELECT ON admin.CUSTOMER_CHOICE_BY_SEASON_VIEW TO CUSTOMER;
 
+-- grant permission to procedures.
+-----------------------------------------------------
+grant execute on admin.CUSTOMER_REGISTRATION_PROCEDURE to CUSTOMER; 
 
--- DELIVERY_PERSON
--- grant permission to views
--------------------------------
-/
-GRANT SELECT ON  DELIVERY_SCHEDULE_VIEW TO DELIVERY_PERSON;
-/
-GRANT SELECT ON  DELIVERY_DETAILS_VIEW TO DELIVERY_PERSON;
-/
+grant execute on admin.ViewAllSubscriptionTypes to CUSTOMER; 
+
+grant execute on admin.PurchaseSubscription to CUSTOMER; 
+
+grant execute on admin.ViewAllMealTypes to CUSTOMER; 
+
+grant execute on admin.book_meal to CUSTOMER; 
+
+grant execute on admin.generate_invoice to CUSTOMER; 
+
+grant execute on admin.get_delivery_details to CUSTOMER; 
+
+-----------------------------------------------------
 
 -- Manager
 --grant permission to views
 
-GRANT SELECT ON  POPULAR_MEAL_BY_SUBSCRIPTION_VIEW TO MANAGER;
+GRANT SELECT ON admin.POPULAR_MEAL_BY_SUBSCRIPTION_VIEW TO MANAGER;
 /
-GRANT SELECT ON REVENUE_VIEW TO MANAGER;
+GRANT SELECT ON admin.REVENUE_VIEW TO MANAGER;
 /
+GRANT SELECT ON admin.DELIVERY_SCHEDULE_VIEW TO MANAGER;
+/
+GRANT SELECT ON admin.CUSTOMER_CHOICE_BY_SEASON_VIEW TO MANAGER;
+/
+GRANT SELECT ON  admin.DELIVERY_DETAILS_VIEW TO MANAGER;
+/
+-----------------------------------------------------
+
+-- grant permission to procedures.
+-----------------------------------------------------
+grant execute on admin.ViewAllSubscriptionTypes to MANAGER; 
+
+grant execute on admin.add_or_update_subscription_type to MANAGER; 
+
+grant execute on admin.ViewAllMealTypes to MANAGER; 
+
+grant execute on admin.add_meal to MANAGER; 
+
+grant execute on admin.create_delivery_partner to MANAGER; 
+
+grant execute on admin.update_booking_delivery_partner to MANAGER; 
 
 -----------------------------------------------------
---
---create user C00001 identified by Welcome_123456789;
---GRANT CREATE SESSION TO C00001;
---GRANT UNLIMITED TABLESPACE TO C00001;
 
+-- Delivery Partner
+--grant permission to procedures
+
+------------------------------------------------------------
+grant execute on admin.view_pending_deliveries to DELIVERY_PERSON; 
+
+grant execute on admin.update_delivery_status to DELIVERY_PERSON; 
+
+grant execute on admin.update_delivery_partner to DELIVERY_PERSON; 
+
+----------------------------------------------------
 
 --- Grant roles for users
 ----------------------------------------------------

@@ -17,11 +17,14 @@ END;
 /
 
 -- procedure 14 execution
---select * from DELIVERY_PARTNER;
+-- select * from DELIVERY_PARTNER;
 BEGIN
     create_delivery_partner(p_d_name => 'new_delivery_person', p_phone_number => 9998887777, p_email => 'new_dp@example.com');
 END;
 /
+
+--views the schedule to assign the delivery partner to a booking.
+-- select * from delivery_schedule_view;
 
 -- procedure 13 execution
 --select * from booking;
