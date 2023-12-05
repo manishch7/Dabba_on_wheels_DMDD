@@ -13,7 +13,6 @@ BEGIN
     BEGIN
       EXECUTE IMMEDIATE 'DROP USER ' || audit_rec.username;
       DBMS_OUTPUT.PUT_LINE('Dropped the user with UserName: ' || audit_rec.username);
-      delete user_audit where user_name = audit_rec.username;
       DBMS_OUTPUT.PUT_LINE('=======================================================');
     EXCEPTION
       WHEN OTHERS THEN

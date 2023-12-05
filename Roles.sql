@@ -8,7 +8,6 @@ BEGIN
     BEGIN
       EXECUTE IMMEDIATE 'DROP ROLE ' || audit_rec.role;
       DBMS_OUTPUT.PUT_LINE('Dropped the role: ' || audit_rec.role);
-      delete user_audit where user_name = audit_rec.role;
       DBMS_OUTPUT.PUT_LINE('=======================================================');
     EXCEPTION
       WHEN OTHERS THEN
@@ -29,56 +28,56 @@ CREATE ROLE DELIVERY_PERSON;
 -- grant permission to views
 -------------------------------
 
-GRANT SELECT ON admin.POPULAR_MEAL_BY_SUBSCRIPTION_VIEW TO CUSTOMER;
+GRANT SELECT ON POPULAR_MEAL_BY_SUBSCRIPTION_VIEW TO CUSTOMER;
 /
-GRANT SELECT ON admin.CUSTOMER_CHOICE_BY_SEASON_VIEW TO CUSTOMER;
+GRANT SELECT ON CUSTOMER_CHOICE_BY_SEASON_VIEW TO CUSTOMER;
 
 -- grant permission to procedures.
 -----------------------------------------------------
-grant execute on admin.CUSTOMER_REGISTRATION_PROCEDURE to CUSTOMER; 
+grant execute on CUSTOMER_REGISTRATION_PROCEDURE to CUSTOMER; 
 
-grant execute on admin.ViewAllSubscriptionTypes to CUSTOMER; 
+grant execute on ViewAllSubscriptionTypes to CUSTOMER; 
 
-grant execute on admin.PurchaseSubscription to CUSTOMER; 
+grant execute on PurchaseSubscription to CUSTOMER; 
 
-grant execute on admin.ViewAllMealTypes to CUSTOMER; 
+grant execute on ViewAllMealTypes to CUSTOMER; 
 
-grant execute on admin.book_meal to CUSTOMER; 
+grant execute on book_meal to CUSTOMER; 
 
-grant execute on admin.generate_invoice to CUSTOMER; 
+grant execute on generate_invoice to CUSTOMER; 
 
-grant execute on admin.get_delivery_details to CUSTOMER; 
+grant execute on get_delivery_details to CUSTOMER; 
 
 -----------------------------------------------------
 
 -- Manager
 --grant permission to views
 
-GRANT SELECT ON admin.POPULAR_MEAL_BY_SUBSCRIPTION_VIEW TO MANAGER;
+GRANT SELECT ON POPULAR_MEAL_BY_SUBSCRIPTION_VIEW TO MANAGER;
 /
-GRANT SELECT ON admin.REVENUE_VIEW TO MANAGER;
+GRANT SELECT ON REVENUE_VIEW TO MANAGER;
 /
-GRANT SELECT ON admin.DELIVERY_SCHEDULE_VIEW TO MANAGER;
+GRANT SELECT ON DELIVERY_SCHEDULE_VIEW TO MANAGER;
 /
-GRANT SELECT ON admin.CUSTOMER_CHOICE_BY_SEASON_VIEW TO MANAGER;
+GRANT SELECT ON CUSTOMER_CHOICE_BY_SEASON_VIEW TO MANAGER;
 /
-GRANT SELECT ON  admin.DELIVERY_DETAILS_VIEW TO MANAGER;
+GRANT SELECT ON  DELIVERY_DETAILS_VIEW TO MANAGER;
 /
 -----------------------------------------------------
 
 -- grant permission to procedures.
 -----------------------------------------------------
-grant execute on admin.ViewAllSubscriptionTypes to MANAGER; 
+grant execute on ViewAllSubscriptionTypes to MANAGER; 
 
-grant execute on admin.add_or_update_subscription_type to MANAGER; 
+grant execute on add_or_update_subscription_type to MANAGER; 
 
-grant execute on admin.ViewAllMealTypes to MANAGER; 
+grant execute on ViewAllMealTypes to MANAGER; 
 
-grant execute on admin.add_meal to MANAGER; 
+grant execute on add_meal to MANAGER; 
 
-grant execute on admin.create_delivery_partner to MANAGER; 
+grant execute on create_delivery_partner to MANAGER; 
 
-grant execute on admin.update_booking_delivery_partner to MANAGER; 
+grant execute on update_booking_delivery_partner to MANAGER; 
 
 -----------------------------------------------------
 
@@ -86,11 +85,11 @@ grant execute on admin.update_booking_delivery_partner to MANAGER;
 --grant permission to procedures
 
 ------------------------------------------------------------
-grant execute on admin.view_pending_deliveries to DELIVERY_PERSON; 
+grant execute on view_pending_deliveries to DELIVERY_PERSON; 
 
-grant execute on admin.update_delivery_status to DELIVERY_PERSON; 
+grant execute on update_delivery_status to DELIVERY_PERSON; 
 
-grant execute on admin.update_delivery_partner to DELIVERY_PERSON; 
+grant execute on update_delivery_partner to DELIVERY_PERSON; 
 
 ----------------------------------------------------
 
