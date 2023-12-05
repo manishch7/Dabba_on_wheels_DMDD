@@ -32,6 +32,8 @@ CREATE OR REPLACE PROCEDURE CUSTOMER_REGISTRATION_PROCEDURE (
     EXC_CITY EXCEPTION;
     EXC_STATE EXCEPTION;
     EXC_ZIP EXCEPTION;
+    v_email_pattern VARCHAR2(100) := '^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,4}$';
+    EXC_VALID_EMAIL EXCEPTION;
 BEGIN
 
  -- Check if the provided phone number  not equal to 10 digits
@@ -48,6 +50,12 @@ IF p_phone_number is null or length(p_phone_number) =0
 IF p_email is null or length(p_email) =0 or length(p_email) > 50 THEN
         RAISE EXC_EMAIL;
     END IF;
+
+   IF NOT REGEXP_LIKE(p_email, v_email_pattern) THEN
+      -- Raise an exception with a custom error message
+      RAISE EXC_VALID_EMAIL;
+   END IF;
+   
      -- Check if the provided address greater than 50 characters
 IF p_street_address is null or length(p_street_address) =0 or length(p_street_address) > 50 THEN
         RAISE EXC_STREET;
@@ -103,7 +111,7 @@ IF p_state is null or length(p_state) =0 or length(p_state) > 20 THEN
 
     -- Set the output parameter with the customer ID
     o_customer_id := v_c_id;
-
+    COMMIT;
     -- Print the customer ID or use it as needed
     DBMS_OUTPUT.PUT_LINE('Customer ID: ' || v_c_id);
 EXCEPTION
@@ -115,6 +123,8 @@ EXCEPTION
         DBMS_OUTPUT.PUT_LINE('Mobile phone number cant be null and should be 10 digit number');
     WHEN EXC_EMAIL THEN
         DBMS_OUTPUT.PUT_LINE('email cant be null and should not be more than 50 characters');
+    WHEN EXC_VALID_EMAIL THEN
+        DBMS_OUTPUT.PUT_LINE('Invalid email format. Please provide a valid email.');
     WHEN EXC_GENDER THEN
         DBMS_OUTPUT.PUT_LINE('gender should not be more than 10 characters');
     WHEN EXC_STREET THEN
@@ -126,7 +136,7 @@ EXCEPTION
     WHEN EXC_ZIP THEN
         DBMS_OUTPUT.PUT_LINE('zipcode is required and should be equal 5 digit number');
    WHEN OTHERS THEN
-        DBMS_OUTPUT.PUT_LINE('Error: An unexpected error occurred.');
+        DBMS_OUTPUT.PUT_LINE('Error: An unexpected error occurred.' || SQLERRM);
 END CUSTOMER_REGISTRATION_PROCEDURE;
 /
 
@@ -227,6 +237,7 @@ BEGIN
         -- Raise an exception if the subscription type is not found
         RAISE EXC_INV_SUB_TYPE;
     END IF;
+COMMIT;
 EXCEPTION
     when EXC_INV_SUB_TYPE then
     DBMS_OUTPUT.PUT_LINE('Sub type doesnt exist, please enter a valid sub type');
@@ -331,10 +342,10 @@ BEGIN
         SYSDATE, p_delivery_date, upper(p_time_slot),
         NULL,'N');
         
-    update subscription set no_of_meals_left = no_of_meals_left - 1 
-    where sub_id = (SELECT s.sub_id FROM subscription s WHERE s.c_id = p_customer_id
-    AND s.end_date >= TRUNC(SYSDATE));
-    
+--    update subscription set no_of_meals_left = no_of_meals_left - 1 
+--    where sub_id = (SELECT s.sub_id FROM subscription s WHERE s.c_id = p_customer_id
+--    AND s.end_date >= TRUNC(SYSDATE));
+    COMMIT;  
     DBMS_OUTPUT.PUT_LINE('Meal booked successfully!');
 EXCEPTION
     WHEN EXC_MEAL then
@@ -441,6 +452,8 @@ CREATE OR REPLACE PROCEDURE update_customer_details (
     EXC_PHONE_NUMBER EXCEPTION;
     EXC_GENDER EXCEPTION;
     EXC_EMAIL EXCEPTION;
+    v_email_pattern VARCHAR2(100) := '^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,4}$';
+    EXC_VALID_EMAIL EXCEPTION;
 BEGIN
 
      -- Check if the provided phone number  not equal to 10 digits
@@ -456,7 +469,12 @@ BEGIN
     IF length(p_email) =0 or length(p_email) > 50 THEN
         RAISE EXC_EMAIL;
     END IF;
-    
+
+   IF NOT REGEXP_LIKE(p_email, v_email_pattern) THEN
+      -- Raise an exception with a custom error message
+      RAISE EXC_VALID_EMAIL;
+   END IF;
+   
     -- Check if the provided email already exists
         SELECT count(*) INTO v_email_count FROM CUSTOMER WHERE c_email = p_email and c_id != p_customer_id;
         
@@ -498,6 +516,8 @@ BEGIN
         DBMS_OUTPUT.PUT_LINE('Mobile phone number cant be empty and should be 10 digit number');
     WHEN EXC_EMAIL THEN
         DBMS_OUTPUT.PUT_LINE('email cant be empty and should not be more than 50 characters');
+    WHEN EXC_VALID_EMAIL THEN
+        DBMS_OUTPUT.PUT_LINE('Invalid email format. Please provide a valid email.');
     WHEN EXC_GENDER THEN
         DBMS_OUTPUT.PUT_LINE('gender should not be more than 10 characters');
    WHEN OTHERS THEN
@@ -558,6 +578,7 @@ BEGIN
 
             DBMS_OUTPUT.PUT_LINE('Success! New subscription type added.');
         END IF;
+COMMIT;
     EXCEPTION
         WHEN OTHERS THEN
             DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
@@ -642,6 +663,7 @@ BEGIN
             -- If the meal type already exists, display an error message
             DBMS_OUTPUT.PUT_LINE('Error: Meal type already exists.');
         END IF;
+    COMMIT;
     EXCEPTION
         WHEN OTHERS THEN
             DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
@@ -745,6 +767,8 @@ CREATE OR REPLACE PROCEDURE create_delivery_partner (
 EXC_PHONE_NUMBER EXCEPTION;
 EXC_NAME EXCEPTION;
 EXC_EMAIL EXCEPTION;
+v_email_pattern VARCHAR2(100) := '^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,4}$';
+EXC_VALID_EMAIL EXCEPTION;
 BEGIN
      -- Check if the provided phone number  not equal to 10 digits
     IF length(p_phone_number) =0 or length(p_phone_number) != 10 THEN
@@ -759,6 +783,11 @@ BEGIN
         RAISE EXC_EMAIL;
     END IF;
     
+    IF NOT REGEXP_LIKE(p_email, v_email_pattern) THEN
+      -- Raise an exception with a custom error message
+      RAISE EXC_VALID_EMAIL;
+   END IF;
+   
     INSERT INTO DELIVERY_PARTNER (dp_id, d_name, d_phone_number, d_email)
     VALUES (DP_SEQ.NEXTVAL, p_d_name, p_phone_number, p_email);
 
@@ -772,6 +801,8 @@ EXCEPTION
         DBMS_OUTPUT.PUT_LINE('Mobile phone number cant be empty and should be 10 digit number');
     WHEN EXC_EMAIL THEN
         DBMS_OUTPUT.PUT_LINE('email cant be empty and should not be more than 50 characters');
+    WHEN EXC_VALID_EMAIL THEN
+        DBMS_OUTPUT.PUT_LINE('Invalid email format. Please provide a valid email.');
     WHEN NO_DATA_FOUND THEN
         DBMS_OUTPUT.PUT_LINE('Delivery Partner ' || ' not found.');
     WHEN OTHERS THEN
@@ -815,7 +846,7 @@ BEGIN
                             );
     END LOOP;
     IF count_num = 0 THEN
-        DBMS_OUTPUT.PUT_LINE('Dp id doesnt exists!');
+        DBMS_OUTPUT.PUT_LINE('Dp id doesnt exists! or No pending deliveries');
     END IF;
     DBMS_OUTPUT.PUT_LINE('---------------------------------------------------');
 END view_pending_deliveries;
@@ -865,6 +896,7 @@ BEGIN
             -- If the booking ID does not exist, display an error message
             DBMS_OUTPUT.PUT_LINE('Error: Booking does not exist.');
         END IF;
+    COMMIT;
     EXCEPTION
         WHEN OTHERS THEN
             DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
@@ -889,6 +921,8 @@ EXC_PHONE_NUMBER EXCEPTION;
 EXC_NAME EXCEPTION;
 EXC_EMAIL EXCEPTION;
 v_dp_exists number;
+v_email_pattern VARCHAR2(100) := '^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,4}$';
+EXC_VALID_EMAIL EXCEPTION;
 BEGIN
 
     IF p_dp_id is null or length(p_dp_id) =0 THEN
@@ -909,6 +943,11 @@ BEGIN
         RAISE EXC_EMAIL;
     END IF;
     
+    IF NOT REGEXP_LIKE(p_d_email, v_email_pattern) THEN
+      -- Raise an exception with a custom error message
+      RAISE EXC_VALID_EMAIL;
+   END IF;
+   
     select count(*) into v_dp_exists from DELIVERY_PARTNER where dp_id = p_dp_id;
     
     if v_dp_exists = 0 then
@@ -933,6 +972,8 @@ EXCEPTION
         DBMS_OUTPUT.PUT_LINE('Mobile phone number cant be empty and should be 10 digit number');
     WHEN EXC_EMAIL THEN
         DBMS_OUTPUT.PUT_LINE('email cant be empty and should not be more than 50 characters');
+    WHEN EXC_VALID_EMAIL THEN
+        DBMS_OUTPUT.PUT_LINE('Invalid email format. Please provide a valid email.');
     WHEN NO_DATA_FOUND THEN
         DBMS_OUTPUT.PUT_LINE('Delivery Partner ' || p_dp_id || ' not found.');
     WHEN OTHERS THEN

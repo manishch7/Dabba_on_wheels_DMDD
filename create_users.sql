@@ -1,3 +1,29 @@
+-- drop user C00004;
+-- select * from user_users;
+-- select * from dba_users;
+--The error was improper use of the DROP USER statement within a PL/SQL block. 
+--The DROP USER statement is a DDL (Data Definition Language) statement, and it cannot be directly executed within PL/SQL blocks like a FOR loop.
+-- we can't drop a user when it assigned a role.
+SET SERVEROUTPUT ON
+/
+BEGIN
+  FOR audit_rec IN (select * from dba_users where oracle_maintained = 'N' 
+  and account_status = 'OPEN' and Authentication_type = 'PASSWORD' and profile = 'DEFAULT')
+  LOOP
+    BEGIN
+      EXECUTE IMMEDIATE 'DROP USER ' || audit_rec.username;
+      DBMS_OUTPUT.PUT_LINE('Dropped the user with UserName: ' || audit_rec.username);
+      delete user_audit where user_name = audit_rec.username;
+      DBMS_OUTPUT.PUT_LINE('=======================================================');
+    EXCEPTION
+      WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error dropping user ' || audit_rec.username || ': ' || SQLERRM);
+        DBMS_OUTPUT.PUT_LINE('=======================================================');
+    END;
+  END LOOP;
+END;
+/
+
 --creating customer users
 create user C00001 identified by Welcome_123456789;
 GRANT CREATE SESSION TO C00001;
@@ -31,7 +57,6 @@ GRANT UNLIMITED TABLESPACE TO MGR00003;
 create user MGR00004 identified by Welcome_123456789;
 GRANT CREATE SESSION TO MGR00004;
 GRANT UNLIMITED TABLESPACE TO MGR00004; 
-
 
 -------------------------------------
 create user DP00001 identified by Welcome_123456789;

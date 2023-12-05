@@ -2,18 +2,20 @@
 -- This view takes input from customer table, subscription and payment table
 -- This view generates revenue by customer in order of highest contribution to lowest. 
 
+-- select * from admin.REVENUE_VIEW;
+
 create or replace view REVENUE_VIEW as
 SELECT C.C_ID ,C.C_NAME as customer_name, COUNT(S.SUB_ID) AS NUM_SUBSCRIPTIONS, NVL(SUM(P.AMOUNT), 0) AS CUSTOMER_EXPENDITURE,
 (case when (select sum(amount) from payment) != 0 then (NVL(SUM(P.AMOUNT), 0)/(select sum(amount) from payment)) *100
 else 0 end) as contribution,(select sum(amount) from payment) as TOTAL_REVENUE FROM CUSTOMER C LEFT JOIN SUBSCRIPTION S ON C.C_ID = S.C_ID
 LEFT JOIN PAYMENT P ON S.SUB_ID = P.SUB_ID GROUP BY C.C_ID, C.C_NAME,P.AMOUNT ORDER BY NUM_SUBSCRIPTIONS DESC;
 
--- 2. Delivery Status View
+-- 2. Delivery Details Comprehensive View
 -- 		This view will provide delivery details of customers
 -- 		This view takes input from location table, booking table, meal table, delivery_partner and customer table 
 -- 	    This view generates delivery status of order, delivery date and delivery driver details 
 
-select * from DELIVERY_DETAILS_view;
+-- select * from DELIVERY_DETAILS_view;
 
 create or replace view DELIVERY_DETAILS_view as
 SELECT C.C_ID AS CUSTOMER_ID,c.c_name as customer_name,  c.c_phone_number as customer_contact ,b.book_id,b.time_slot, b.date_of_delivery, m.type as meal_type,
@@ -31,7 +33,9 @@ on c.loc_id = l.loc_id;
 
 -- 3. Popular Meal View
 -- 		This view takes input from location table, booking table, meal table, delivery_partner and customer table 
---      This view will provide popular meal among the subscription types for manager
+--      This view will provide popular meal among the subscription types for the manager
+
+-- select * from POPULAR_MEAL_BY_SUBSCRIPTION_VIEW;
 
 create or replace view POPULAR_MEAL_BY_SUBSCRIPTION_VIEW as
 WITH SubscriptionMealCounts AS (
@@ -51,7 +55,7 @@ WHERE RANKING = 1;
 -- 		This view takes input from location table, booking table, meal table, delivery_partner and customer table 
 --      This view will provide popular meal among the subscription types for manager
 
-select * from DELIVERY_SCHEDULE_VIEW;
+-- select * from DELIVERY_SCHEDULE_VIEW;
 
 create or replace view DELIVERY_SCHEDULE_VIEW as
 SELECT
@@ -78,6 +82,8 @@ ORDER BY
 -- 5. Customer popular choice View
 -- 		This view takes input from location table, booking table, meal table, delivery_partner and customer table 
 --      This view will provide popular meal among the subscription types for manager
+
+-- select * from CUSTOMER_CHOICE_BY_SEASON_VIEW;
 
 create or replace view CUSTOMER_CHOICE_BY_SEASON_VIEW as 
 with POPULAR_MEALS as (
